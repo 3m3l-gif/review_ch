@@ -164,27 +164,49 @@ export default function App() {
 // 이미지 저장 함수 (기본 화질)
   const exportAsImage = async () => {
     if (!previewRef.current) return;
+    
+    // 1. 임시 스타일 생성: oklch를 인식 못하는 라이브러리를 위해 강제로 색상 고정
+    const style = document.createElement('style');
+    style.innerHTML = `
+      * { 
+        color-scheme: light !important; 
+        stop-color: white !important; /* oklch 파싱 에러 방지 */
+      }
+    `;
+    document.head.appendChild(style);
+
     try {
       const canvas = await html2canvas(previewRef.current, {
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#ffffff", // oklch 오류 방지용 강제 지정
-        scale: 1, // 오류 가능성을 낮추기 위해 배율을 1로 고정
-        logging: false
+        backgroundColor: "#ffffff", // 확실한 hex 값 사용
+        scale: 1,
+        // 라이브러리가 내부적으로 oklch를 만났을 때 무시하도록 설정
+        onclone: (clonedDoc) => {
+          const elements = clonedDoc.getElementsByTagName('*');
+          for (let i = 0; i < elements.length; i++) {
+            // 모든 요소의 배경과 글자색에서 oklch가 있으면 강제로 대체
+            const computedStyle = window.getComputedStyle(elements[i]);
+            if (computedStyle.backgroundColor.includes('oklch')) {
+              (elements[i] as HTMLElement).style.backgroundColor = '#ffffff';
+            }
+          }
+        }
       });
       
-      const imgData = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.href = imgData;
-      // data 변수 사용 확인
-      link.download = `${data?.title || 'review'}-card.png`;
+      link.download = `${data?.title || 'review'}.png`;
+      link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
-      console.error("이미지 저장 실패:", err);
-      alert("이미지 저장 중 오류가 발생했습니다. 브라우저의 최신 컬러 기능을 끄거나 다른 브라우저를 이용해 보세요.");
+      console.error("최종 저장 실패:", err);
+      alert("브라우저 호환성 문제로 이미지를 생성할 수 없습니다. 크롬(Chrome) 브라우저를 권장합니다.");
+    } finally {
+      // 2. 작업 완료 후 임시 스타일 제거
+      document.head.removeChild(style);
     }
   };
-
+  
   // PDF 저장 함수 (중단된 부분 연결 및 괄호 닫기)
   const exportAsPDF = async () => {
     if (!previewRef.current) return;
