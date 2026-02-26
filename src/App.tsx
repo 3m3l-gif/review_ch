@@ -208,21 +208,75 @@ export default function App() {
               <div className="p-10 h-full flex flex-col relative z-[1]">
                 <div className="flex justify-between items-start mb-8">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600">{data.type === 'book' ? 'Library Archive' : 'Cinema Archive'}</div>
-                    <h2 className="text-4xl font-serif font-black">{data.title || 'Untitled'}</h2>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600">
+                      {data.type === 'book' ? 'Library Archive' : 'Cinema Archive'}
+                    </div>
+                    <h2 className="text-4xl font-serif font-black mb-2">{data.title || 'Untitled'}</h2>
+                    
+                    {/* 장르 및 인물 정보 (영화/책 공통 적용) */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500 italic">
+                      <span>{data.type === 'book' ? data.author || 'Author' : data.director || 'Director'}</span>
+                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                      <span>{data.genre || 'Genre'}</span>
+                    </div>
                   </div>
-                  <div className="flex text-emerald-500">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`w-4 h-4 ${i < Math.floor(data.rating) ? 'fill-current' : 'text-gray-200'}`} />)}</div>
+                  <div className="flex text-emerald-500">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < Math.floor(data.rating) ? 'fill-current' : 'text-gray-200'}`} />
+                    ))}
+                  </div>
                 </div>
+
                 <div className="grid grid-cols-12 gap-8 flex-1">
-                  <div className="col-span-5"><div className="aspect-[3/4] rounded-lg overflow-hidden border border-gray-200">{data.image ? <img src={data.image} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon /></div>}</div></div>
+                  {/* 왼쪽 컬럼: 이미지 + 책 추가 정보 */}
+                  <div className="col-span-5">
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 mb-6">
+                      {data.image ? (
+                        <img src={data.image} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300">
+                          <ImageIcon />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 책 리뷰일 때만 보여주는 출판사 & 날짜 */}
+                    {data.type === 'book' && (
+                      <div className="space-y-4 text-[11px] border-t pt-4 border-gray-100">
+                        <div>
+                          <div className="font-bold text-gray-400 uppercase mb-1">Publisher</div>
+                          <div className={data.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
+                            {data.publisher || '—'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-bold text-gray-400 uppercase mb-1">Date Read</div>
+                          <div className={data.theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
+                            {data.dateRead || '—'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 오른쪽 컬럼: 인용구 + 리뷰 본문 */}
                   <div className="col-span-7 flex flex-col gap-6">
                     {data.quote && (
                       <div className="relative p-6 rounded-2xl bg-emerald-50/50 border border-emerald-100 italic font-serif">
-                        <Quote className="absolute -top-3 -left-3 w-8 h-8 text-emerald-200 fill-current" />
-                        <p style={{ fontSize: quoteSizeValues[quoteSize] }} className="leading-relaxed">"{data.quote}"</p>
+                        <Quote className="absolute -top-3 -left-3 w-8 h-8 text-emerald-200 fill-current opacity-50" />
+                        <p style={{ fontSize: quoteSizeValues[quoteSize] }} className="leading-relaxed">
+                          "{data.quote}"
+                        </p>
                       </div>
                     )}
-                    <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap">{reviewType === 'book' ? data.shortReview : data.impressions}</p>
+                    <div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">
+                        {data.type === 'book' ? 'Short Review' : 'Impressions'}
+                      </div>
+                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${data.theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                        {data.type === 'book' ? data.shortReview : data.impressions}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
