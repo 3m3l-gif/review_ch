@@ -16,9 +16,9 @@ import {
   Plus,
   Quote
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf'; // 중괄호 { } 추가
+import { domToPng } from 'modern-screenshot'; // html2canvas 대신 사용
 
 // --- Types ---
 
@@ -163,67 +163,43 @@ export default function App() {
 
 // 이미지 저장 함수 (기본 화질)
   const exportAsImage = async () => {
-    if (!previewRef.current) return;
-    
-    // 1. 임시 스타일 생성: oklch를 인식 못하는 라이브러리를 위해 강제로 색상 고정
-    const style = document.createElement('style');
-    style.innerHTML = `
-      * { 
-        color-scheme: light !important; 
-        stop-color: white !important; /* oklch 파싱 에러 방지 */
-      }
-    `;
-    document.head.appendChild(style);
+  if (!previewRef.current) return;
+  try {
+    const dataUrl = await domToPng(previewRef.current);
+    const link = document.createElement('a');
+    link.download = `${data?.title || 'review'}.png`; // data 변수 사용
+    link.href = dataUrl;
+    link.click();
+  } catch (err) {
+    console.error("저장 실패:", err);
+  }
+};
 
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff", // 확실한 hex 값 사용
-        scale: 1,
-        // 라이브러리가 내부적으로 oklch를 만났을 때 무시하도록 설정
-        onclone: (clonedDoc) => {
-          const elements = clonedDoc.getElementsByTagName('*');
-          for (let i = 0; i < elements.length; i++) {
-            // 모든 요소의 배경과 글자색에서 oklch가 있으면 강제로 대체
-            const computedStyle = window.getComputedStyle(elements[i]);
-            if (computedStyle.backgroundColor.includes('oklch')) {
-              (elements[i] as HTMLElement).style.backgroundColor = '#ffffff';
-            }
-          }
-        }
-      });
-      
-      const link = document.createElement('a');
-      link.download = `${data?.title || 'review'}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (err) {
-      console.error("최종 저장 실패:", err);
-      alert("브라우저 호환성 문제로 이미지를 생성할 수 없습니다. 크롬(Chrome) 브라우저를 권장합니다.");
-    } finally {
-      // 2. 작업 완료 후 임시 스타일 제거
-      document.head.removeChild(style);
-    }
-  };
-  
   // PDF 저장 함수 (중단된 부분 연결 및 괄호 닫기)
   const exportAsPDF = async () => {
     if (!previewRef.current) return;
     try {
-      const canvas = await html2canvas(previewRef.current, { useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a5'
+      // 1. modern-screenshot으로 고화질 이미지 생성 (oklch 오류 방지)
+      const dataUrl = await domToPng(previewRef.current, {
+        scale: 2, // PDF 품질을 위해 2배 확대
+        backgroundColor: '#ffffff',
       });
-      pdf.addImage(imgData, 'PNG', 0, 0, 148, 210);
-      pdf.save(`${data.title || 'review'}-card.pdf`);
+
+      // 2. jsPDF 설정
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      // 3. 이미지 삽입 및 저장
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      // data 변수 사용 확인
+      pdf.save(`${data?.title || 'review'}-card.pdf`);
     } catch (err) {
-      console.error(err);
+      console.error("PDF 저장 실패:", err);
+      alert("PDF 생성 중 오류가 발생했습니다.");
     }
-  }; // <- 이 닫는 괄호가 없어서 전체 에러가 발생했던 것입니다
+  };
 
   return (
     <div className="min-h-screen bg-[#f5f5f0] font-sans text-gray-900 selection:bg-emerald-200">
