@@ -7,12 +7,13 @@
     --font-serif: "Playfair Display", serif;
     --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
     
-    /* html2canvas 호환성을 위해 배경과 텍스트 색상을 hex로 강제 지정 */
+    /* html2canvas 호환성을 위해 배경과 텍스트 색상을 확실한 hex 값으로 지정 */
     --background: #ffffff;
     --foreground: #0f172a;
   }
 
   body {
+    /* oklch 대신 변수에 담긴 hex 값을 사용하여 오류를 방지합니다 */
     background-color: var(--background);
     color: var(--foreground);
   }

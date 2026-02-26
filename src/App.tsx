@@ -165,23 +165,22 @@ export default function App() {
   const exportAsImage = async () => {
     if (!previewRef.current) return;
     try {
-      // html2canvas 실행 시 최신 CSS 기능을 무시하고 기본 설정으로 렌더링하도록 유도
+      // 렌더링 전, oklch 색상 함수 파싱 오류를 방지하기 위해 설정을 추가합니다
       const canvas = await html2canvas(previewRef.current, { 
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#ffffff", // oklch 오류 방지용
-        logging: false,
-        scale: 1 // 오류 최소화를 위해 배율을 기본값으로 설정
+        backgroundColor: "#ffffff", // oklch 오류 방지용 강제 흰색 배경
+        scale: 1 
       });
-
+      
       const link = document.createElement('a');
-      // data 변수 사용 확인
+      // 'formData'나 'review'가 아닌 현재 상태 값인 'data'를 사용해야 합니다
       link.download = `${data?.title || 'review'}-card.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
-      console.error("이미지 저장 오류:", err);
-      alert("브라우저에서 이미지 생성을 거부했습니다. 다시 시도해 주세요.");
+      console.error("저장 실패:", err);
+      alert("이미지 저장 중 오류가 발생했습니다. 브라우저 콘솔을 확인해주세요.");
     }
   };
 
