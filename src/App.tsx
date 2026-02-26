@@ -165,13 +165,23 @@ export default function App() {
   const exportAsImage = async () => {
     if (!previewRef.current) return;
     try {
-      const canvas = await html2canvas(previewRef.current, { useCORS: true });
+      // html2canvas 실행 시 최신 CSS 기능을 무시하고 기본 설정으로 렌더링하도록 유도
+      const canvas = await html2canvas(previewRef.current, { 
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff", // oklch 오류 방지용
+        logging: false,
+        scale: 1 // 오류 최소화를 위해 배율을 기본값으로 설정
+      });
+
       const link = document.createElement('a');
-      link.download = `${data.title || 'review'}-card.png`; // 'formData' 대신 'data' 사용
+      // data 변수 사용 확인
+      link.download = `${data?.title || 'review'}-card.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
-      console.error(err);
+      console.error("이미지 저장 오류:", err);
+      alert("브라우저에서 이미지 생성을 거부했습니다. 다시 시도해 주세요.");
     }
   };
 
