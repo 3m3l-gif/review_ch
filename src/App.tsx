@@ -191,11 +191,50 @@ export default function App() {
 
             {reviewType === 'book' ? (
               <div className="space-y-4">
-                <div className="space-y-1"><label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Short Review</label><textarea value={data.shortReview} onChange={(e) => handleInputChange('shortReview', e.target.value)} rows={3} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none resize-none" /></div>
+                {/* 여기에 출판사와 날짜 입력 칸을 넣었습니다 */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Publisher</label>
+                    <input 
+                      type="text" 
+                      value={data.publisher} 
+                      onChange={(e) => handleInputChange('publisher', e.target.value)} 
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" 
+                      placeholder="출판사"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date Read</label>
+                    <input 
+                      type="date" 
+                      value={data.dateRead} 
+                      onChange={(e) => handleInputChange('dateRead', e.target.value)} 
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" 
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Short Review</label>
+                  <textarea 
+                    value={data.shortReview} 
+                    onChange={(e) => handleInputChange('shortReview', e.target.value)} 
+                    rows={3} 
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none resize-none focus:ring-2 focus:ring-emerald-500" 
+                  />
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="space-y-1"><label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Impressions</label><textarea value={data.impressions} onChange={(e) => handleInputChange('impressions', e.target.value)} rows={4} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none resize-none" /></div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Impressions</label>
+                  <textarea 
+                    value={data.impressions} 
+                    onChange={(e) => handleInputChange('impressions', e.target.value)} 
+                    rows={4} 
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none resize-none focus:ring-2 focus:ring-emerald-500" 
+                  />
+                </div>
               </div>
             )}
           </div>
